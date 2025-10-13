@@ -1,27 +1,40 @@
 package routers
 
 import (
-	"fsd-backend/internal/controllers"
-
 	"github.com/gin-gonic/gin"
+	"fsd-backend/internal/controllers"
+	"fsd-backend/internal/middleware"
 )
 
-func SetupRouter() *gin.Engine {
-	r := gin.Default()
+type cfgLike interface {
+	// we only need AllowedOrigin or JWTSecret here later if desired
+}
 
-	r.GET("/health", controllers.HealthCheck)
+func RegisterSystemRoutes(r *gin.Engine) {
+	r.GET("/healthz", controllers.HealthCheck)
+	r.GET("/readyz", controllers.HealthCheck) // later: ping DB/Redis
+	r.GET("/metrics", middleware.MetricsHandler())
+}
 
-	api := r.Group("/api")
+func RegisterAPIV1(r *gin.Engine, cfg cfgLike) {
+	v1 := r.Group("/api/v1")
+
+	// public
+	v1.POST("/auth/login", controllers.LoginStub)
+	v1.POST("/auth/refresh", controllers.RefreshStub)
+
+	// protected
+	auth := v1.Group("/")
+	auth.Use(middleware.JWT())
 	{
-		users := api.Group("/users")
-		{
-			users.GET("", controllers.GetUsers)
-			users.GET("/:id", controllers.GetUserByID)
-			users.POST("", controllers.CreateUser)
-			users.PUT("/:id", controllers.UpdateUser)
-			users.DELETE("/:id", controllers.DeleteUser)
-		}
+		auth.GET("/users", controllers.GetUsers)
+		auth.GET("/users/:id", controllers.GetUserByID)
+		auth.POST("/users", controllers.CreateUser)
+		auth.PUT("/users/:id", controllers.UpdateUser)
+		auth.DELETE("/users/:id", controllers.DeleteUser)
 	}
+}
 
-	return r
+func RegisterWS(r *gin.Engine, cfg cfgLike) {
+	r.GET("/ws", controllers.WSHandler) // token can be query param for now
 }

@@ -1,13 +1,35 @@
 package main
 
 import (
-    "fsd-backend/internal/routers"
+	"context"
+	"log"
+	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
+
+	"fsd-backend/internal/app"
 )
 
 func main() {
-    r := routers.SetupRouter()
+	cfg := app.LoadConfig()
+	r := app.NewServer(cfg)
 
-    if err := r.Run(":8080"); err != nil {
-        panic(err)
-    }
+	srv := &http.Server{Addr: ":" + cfg.Port, Handler: r}
+
+	go func() {
+		log.Printf("listening on :%s", cfg.Port)
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Fatal(err)
+		}
+	}()
+
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	_ = srv.Shutdown(ctx)
 }

@@ -7,7 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-var users = []map[string]interface{}{
+var users = []map[string]any{
 	{"id": 1, "name": "Alice"},
 	{"id": 2, "name": "Bob"},
 }
@@ -32,15 +32,13 @@ func GetUserByID(c *gin.Context) {
 }
 
 func CreateUser(c *gin.Context) {
-	var newUser struct {
-		Name string `json:"name" binding:"required"`
-	}
-	if err := c.ShouldBindJSON(&newUser); err != nil {
+	var payload struct{ Name string `json:"name" binding:"required"` }
+	if err := c.ShouldBindJSON(&payload); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 	id := len(users) + 1
-	user := map[string]interface{}{"id": id, "name": newUser.Name}
+	user := map[string]any{"id": id, "name": payload.Name}
 	users = append(users, user)
 	c.JSON(http.StatusCreated, gin.H{"data": user})
 }
@@ -51,9 +49,7 @@ func UpdateUser(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid user ID"})
 		return
 	}
-	var payload struct {
-		Name string `json:"name" binding:"required"`
-	}
+	var payload struct{ Name string `json:"name" binding:"required"` }
 	if err := c.ShouldBindJSON(&payload); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -83,4 +79,3 @@ func DeleteUser(c *gin.Context) {
 	}
 	c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
 }
-
