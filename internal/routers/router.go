@@ -11,8 +11,8 @@ type cfgLike interface {
 }
 
 func RegisterSystemRoutes(r *gin.Engine) {
-	r.GET("/healthz", controllers.HealthCheck)
-	r.GET("/readyz", controllers.HealthCheck) // later: ping DB/Redis
+	r.GET("/health", controllers.HealthCheck)
+	r.GET("/ready", controllers.HealthCheck) // later: ping DB/Redis
 	r.GET("/metrics", middleware.MetricsHandler())
 }
 
