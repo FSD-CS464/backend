@@ -4,6 +4,7 @@
 
 - Go 1.23.2 or higher
 - Docker and Docker Compose
+- Cockroach DB Cluster
 
 ## Project Structure
 
@@ -58,6 +59,12 @@ go mod tidy
 > To get access token
 ```bash
 POST http://localhost:8080/api/v1/auth/login
+
+{
+  "username": "demo",
+  "password": "demo"
+}
+
 ```
 
 ## CockroachDB Migration
