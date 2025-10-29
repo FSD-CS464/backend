@@ -17,9 +17,28 @@
 
 ```
 .
+├── app
+│   ├── config.go
+│   └── server.go
+├── auth
+│   └── jwt.go
 ├── controllers
+│   ├── auth_controller.go
 │   ├── health_controller.go
-│   └── user_controller.go
+│   ├── user_controller.go
+│   └── ws_controller.go
+├── db
+│   └── db.go
+├── middleware
+│   ├── auth_jwt.go
+│   ├── cors.go
+│   ├── prometheus.go
+│   ├── recovery.go
+│   └── requestid.go
+├── repository
+│   ├── pet_repo.go
+│   ├── types.go
+│   └── user_repo.go
 └── routers
     └── router.go
 ```
