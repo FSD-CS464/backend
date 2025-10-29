@@ -9,10 +9,15 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/joho/godotenv"
+
 	"fsd-backend/internal/app"
 )
 
 func main() {
+	_ = godotenv.Load(".env.local")
+	_ = godotenv.Load(".env")
+
 	cfg := app.LoadConfig()
 	r := app.NewServer(cfg)
 

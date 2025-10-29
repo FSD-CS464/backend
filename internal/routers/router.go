@@ -6,6 +6,7 @@ import (
 	"fsd-backend/internal/auth"
 	"fsd-backend/internal/controllers"
 	"fsd-backend/internal/middleware"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type cfgLike interface{}
@@ -16,8 +17,7 @@ func RegisterSystemRoutes(r *gin.Engine) {
 	r.GET("/metrics", middleware.MetricsHandler())
 }
 
-// NOTE: accept signer so we can wire JWT + auth handlers
-func RegisterAPIV1(r *gin.Engine, cfg cfgLike, signer *auth.Signer) {
+func RegisterAPIV1(r *gin.Engine, cfg cfgLike, signer *auth.Signer, pool *pgxpool.Pool) {
 	v1 := r.Group("/api/v1")
 
 	authCtl := controllers.NewAuthController(signer)
@@ -33,15 +33,27 @@ func RegisterAPIV1(r *gin.Engine, cfg cfgLike, signer *auth.Signer) {
 	{
 		protected.GET("/auth/me", authCtl.Me)
 
-		protected.GET("/users", controllers.GetUsers)
-		protected.GET("/users/:id", controllers.GetUserByID)
-		protected.POST("/users", controllers.CreateUser)
-		protected.PUT("/users/:id", controllers.UpdateUser)
-		protected.DELETE("/users/:id", controllers.DeleteUser)
+		udb := controllers.NewUserController(pool)
+		protected.GET("/users", udb.List)
+		protected.GET("/users/:id", udb.GetByID)
+		protected.POST("/users", udb.Create)
+		protected.PUT("/users/:id/name", udb.UpdateName)
+		protected.DELETE("/users/:id", udb.Delete)
+
+		// pdb := controllers.NewPetControllerDB(pool)
+		// protected.GET("/pets/:id", pdb.GetByID)
+		// protected.POST("/pets", pdb.Create)
+
+		// hdb := controllers.NewHabitControllerDB(pool)
+		// protected.GET("/habits/:id", hdb.GetByID)
+		// protected.POST("/habits", hdb.Create)
+
+		// gdb := controllers.NewGameControllerDB(pool)
+		// protected.GET("/games/:id", gdb.GetByID)
+		// protected.POST("/games", gdb.Create)
 	}
 }
 
 func RegisterWS(r *gin.Engine, cfg cfgLike) {
-	// keep as-is for now (you can validate token in query later if needed)
 	r.GET("/ws", controllers.WSHandler)
 }

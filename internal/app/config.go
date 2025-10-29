@@ -6,6 +6,7 @@ type Config struct {
 	Port          string
 	AllowedOrigin string
 	JWTSecret     string
+	DatabaseURL   string
 }
 
 func LoadConfig() Config {
@@ -15,10 +16,12 @@ func LoadConfig() Config {
 	if origin == "" { origin = "*" }
 	secret := os.Getenv("JWT_SECRET")
 	if secret == "" { secret = "dev-secret-change-me" }
+	dbURL := os.Getenv("DATABASE_URL")
 
 	return Config{
 		Port:          port,
 		AllowedOrigin: origin,
 		JWTSecret:     secret,
+		DatabaseURL:   dbURL,
 	}
 }

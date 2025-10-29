@@ -20,6 +20,8 @@ vendor/
 /build/
 /dist/
 
+.env
+
 # Go workspace file (if you use go work)
 go.work
 

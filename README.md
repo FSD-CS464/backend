@@ -36,3 +36,16 @@ go run cmd/api/main.go
 go mod tidy
 ```
 
+> To get access token
+```bash
+POST http://localhost:8080/api/v1/auth/login
+```
+
+## CockroachDB Migration
+
+> Using CLI to do database migration
+```bash
+go run ./cmd/migrate
+```
+
+

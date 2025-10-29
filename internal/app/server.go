@@ -1,11 +1,13 @@
 package app
 
 import (
+	"context"
 	"time"
 
 	"github.com/gin-gonic/gin"
 
 	"fsd-backend/internal/auth"
+	"fsd-backend/internal/db"
 	"fsd-backend/internal/middleware"
 	"fsd-backend/internal/routers"
 )
@@ -17,14 +19,16 @@ func NewServer(cfg Config) *gin.Engine {
 	r.Use(middleware.CORS(cfg.AllowedOrigin))
 	r.Use(middleware.Prometheus())
 
-	// Minimal sane TTLs (env-configurable later)
 	signer := auth.NewSigner(cfg.JWTSecret,
-		15*time.Minute, // access
-		7*24*time.Hour, // refresh
+		15*time.Minute,
+		7*24*time.Hour,
 	)
 
+	pool, err := db.Connect(context.Background(), cfg.DatabaseURL)
+	if err != nil { panic(err) }
+
 	routers.RegisterSystemRoutes(r)
-	routers.RegisterAPIV1(r, cfg, signer)
+	routers.RegisterAPIV1(r, cfg, signer, pool)
 	routers.RegisterWS(r, cfg)
 
 	return r
