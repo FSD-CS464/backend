@@ -67,4 +67,14 @@ POST http://localhost:8080/api/v1/auth/login
 go run ./cmd/migrate
 ```
 
+> Seed data into database
+```bash
+go run ./cmd/seed
+```
+
+> To roll down goose for reset schema
+```bash
+go run ./cmd/migrate -down
+```
+
 
