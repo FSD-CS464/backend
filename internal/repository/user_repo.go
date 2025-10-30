@@ -7,27 +7,42 @@ import (
 )
 
 type UserRepo struct{ db *pgxpool.Pool }
+
 func NewUserRepo(db *pgxpool.Pool) *UserRepo { return &UserRepo{db: db} }
 
 func (r *UserRepo) GetByID(ctx context.Context, id string) (*User, error) {
-	const q = `SELECT id, email, display_name, attrs, created_at, updated_at FROM users WHERE id = $1`
+	const q = `SELECT id, email, display_name, password_hash, attrs, created_at, updated_at FROM users WHERE id = $1`
 	var u User
 	if err := r.db.QueryRow(ctx, q, id).
-		Scan(&u.ID, &u.Email, &u.DisplayName, &u.Attrs, &u.CreatedAt, &u.UpdatedAt); err != nil {
+		Scan(&u.ID, &u.Email, &u.DisplayName, &u.PasswordHash, &u.Attrs, &u.CreatedAt, &u.UpdatedAt); err != nil {
+		return nil, err
+	}
+	return &u, nil
+}
+
+func (r *UserRepo) GetByEmail(ctx context.Context, email string) (*User, error) {
+	const q = `SELECT id, email, display_name, password_hash, attrs, created_at, updated_at FROM users WHERE email = $1`
+	var u User
+	if err := r.db.QueryRow(ctx, q, email).
+		Scan(&u.ID, &u.Email, &u.DisplayName, &u.PasswordHash, &u.Attrs, &u.CreatedAt, &u.UpdatedAt); err != nil {
 		return nil, err
 	}
 	return &u, nil
 }
 
 func (r *UserRepo) List(ctx context.Context, limit int) ([]User, error) {
-	const q = `SELECT id, email, display_name, attrs, created_at, updated_at FROM users ORDER BY created_at DESC LIMIT $1`
+	const q = `SELECT id, email, display_name, password_hash, attrs, created_at, updated_at
+	           FROM users ORDER BY created_at DESC LIMIT $1`
 	rows, err := r.db.Query(ctx, q, limit)
-	if err != nil { return nil, err }
+	if err != nil {
+		return nil, err
+	}
 	defer rows.Close()
+
 	var out []User
 	for rows.Next() {
 		var u User
-		if err := rows.Scan(&u.ID, &u.Email, &u.DisplayName, &u.Attrs, &u.CreatedAt, &u.UpdatedAt); err != nil {
+		if err := rows.Scan(&u.ID, &u.Email, &u.DisplayName, &u.PasswordHash, &u.Attrs, &u.CreatedAt, &u.UpdatedAt); err != nil {
 			return nil, err
 		}
 		out = append(out, u)
@@ -39,10 +54,23 @@ func (r *UserRepo) Create(ctx context.Context, email, displayName string, attrs 
 	const q = `
 INSERT INTO users (email, display_name, attrs)
 VALUES ($1, $2, COALESCE($3, '{}'::JSONB))
-RETURNING id, email, display_name, attrs, created_at, updated_at`
+RETURNING id, email, display_name, password_hash, attrs, created_at, updated_at`
 	var u User
 	if err := r.db.QueryRow(ctx, q, email, displayName, attrs).
-		Scan(&u.ID, &u.Email, &u.DisplayName, &u.Attrs, &u.CreatedAt, &u.UpdatedAt); err != nil {
+		Scan(&u.ID, &u.Email, &u.DisplayName, &u.PasswordHash, &u.Attrs, &u.CreatedAt, &u.UpdatedAt); err != nil {
+		return nil, err
+	}
+	return &u, nil
+}
+
+func (r *UserRepo) CreateWithPassword(ctx context.Context, email, displayName, passwordHash string, attrs map[string]any) (*User, error) {
+	const q = `
+INSERT INTO users (email, display_name, password_hash, attrs)
+VALUES ($1, $2, $3, COALESCE($4, '{}'::JSONB))
+RETURNING id, email, display_name, password_hash, attrs, created_at, updated_at`
+	var u User
+	if err := r.db.QueryRow(ctx, q, email, displayName, passwordHash, attrs).
+		Scan(&u.ID, &u.Email, &u.DisplayName, &u.PasswordHash, &u.Attrs, &u.CreatedAt, &u.UpdatedAt); err != nil {
 		return nil, err
 	}
 	return &u, nil
@@ -52,10 +80,10 @@ func (r *UserRepo) UpdateName(ctx context.Context, id, displayName string) (*Use
 	const q = `
 UPDATE users SET display_name = $2, updated_at = now()
 WHERE id = $1
-RETURNING id, email, display_name, attrs, created_at, updated_at`
+RETURNING id, email, display_name, password_hash, attrs, created_at, updated_at`
 	var u User
 	if err := r.db.QueryRow(ctx, q, id, displayName).
-		Scan(&u.ID, &u.Email, &u.DisplayName, &u.Attrs, &u.CreatedAt, &u.UpdatedAt); err != nil {
+		Scan(&u.ID, &u.Email, &u.DisplayName, &u.PasswordHash, &u.Attrs, &u.CreatedAt, &u.UpdatedAt); err != nil {
 		return nil, err
 	}
 	return &u, nil

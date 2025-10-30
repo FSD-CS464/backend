@@ -20,10 +20,11 @@ func RegisterSystemRoutes(r *gin.Engine) {
 func RegisterAPIV1(r *gin.Engine, cfg cfgLike, signer *auth.Signer, pool *pgxpool.Pool) {
 	v1 := r.Group("/api/v1")
 
-	authCtl := controllers.NewAuthController(signer)
+	authCtl := controllers.NewAuthController(signer, pool)
 	jwtmw := middleware.NewJWT(signer)
 
 	// public
+	v1.POST("/auth/register", authCtl.Register)
 	v1.POST("/auth/login", authCtl.Login)
 	v1.POST("/auth/refresh", authCtl.Refresh)
 

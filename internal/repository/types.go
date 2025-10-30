@@ -3,12 +3,13 @@ package repository
 import "time"
 
 type User struct {
-	ID          string                 `json:"id"`
-	Email       string                 `json:"email"`
-	DisplayName string                 `json:"display_name"`
-	Attrs       map[string]any         `json:"attrs"`
-	CreatedAt   time.Time              `json:"created_at"`
-	UpdatedAt   time.Time              `json:"updated_at"`
+	ID           string                 `json:"id"`
+	Email        string                 `json:"email"`
+	DisplayName  string                 `json:"display_name"`
+	PasswordHash string                 `json:"-"`
+	Attrs        map[string]any         `json:"attrs"`
+	CreatedAt    time.Time              `json:"created_at"`
+	UpdatedAt    time.Time              `json:"updated_at"`
 }
 
 type Pet struct {
