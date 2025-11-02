@@ -6,6 +6,7 @@ import (
 	"fsd-backend/internal/auth"
 	"fsd-backend/internal/controllers"
 	"fsd-backend/internal/middleware"
+
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -52,6 +53,14 @@ func RegisterAPIV1(r *gin.Engine, cfg cfgLike, signer *auth.Signer, pool *pgxpoo
 		// gdb := controllers.NewGameControllerDB(pool)
 		// protected.GET("/games/:id", gdb.GetByID)
 		// protected.POST("/games", gdb.Create)
+
+		// Game API endpoints for Godot game
+		gameCtl := controllers.NewGameController()
+		gameGroup := protected.Group("/game")
+		{
+			gameGroup.GET("/data", gameCtl.GetUserData)
+			gameGroup.POST("/save", gameCtl.SaveGameData)
+		}
 	}
 }
 
