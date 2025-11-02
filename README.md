@@ -84,4 +84,15 @@ go run ./cmd/seed
 go run ./cmd/migrate -down
 ```
 
+## CORS Configuration
+
+The backend CORS middleware supports a single allowed origin or wildcard (`*`).
+
+### Environment Variable
+Set `ALLOWED_ORIGIN` environment variable to:
+ALLOWED_ORIGIN="https://godot-deployment-ten.vercel.app"
+in order to allow the godot game to connect to the backend
+
+**Note:** When using ALLOWED_ORIGIN=`*`, `Access-Control-Allow-Credentials` cannot be set, but Authorization headers still work.
+
 
