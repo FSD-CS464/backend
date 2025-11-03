@@ -23,13 +23,14 @@ type Pet struct {
 }
 
 type Habit struct {
-	ID        string         `json:"id"`
-	UserID    string         `json:"user_id"`
-	Title     string         `json:"title"`
-	Cadence   string         `json:"cadence"`
-	Attrs     map[string]any `json:"attrs"`
-	CreatedAt time.Time      `json:"created_at"`
-	UpdatedAt time.Time      `json:"updated_at"`
+	ID        string    `json:"id"`
+	UserID    string    `json:"user_id"`
+	Title     string    `json:"title"`
+	Done      bool      `json:"done"`
+	Icons     string    `json:"icons"`
+	Cadence   string    `json:"cadence"` // "daily" | "everyN-<n_days>" | "weekly-<day_of_the_week>" or "weekly-<day1,day2,...>"
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 type Game struct {

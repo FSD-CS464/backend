@@ -34,8 +34,8 @@ func main() {
 			{UserEmail: "bob@example.com",   Name: "Bolt", Species: "dog", Attrs: map[string]any{"age":2}},
 		},
 		Habits: []seed.Habit{
-			{UserEmail: "alice@example.com", Title: "Daily Pomodoro", Cadence: "daily", Attrs: map[string]any{"duration":25}},
-			{UserEmail: "bob@example.com",   Title: "Gym 3x",         Cadence: "3x/week"},
+			{UserEmail: "alice@example.com", Title: "Daily Pomodoro", Cadence: "daily", Attrs: map[string]any{"done": false, "icons": "🍅"}},
+			{UserEmail: "bob@example.com",   Title: "Gym 3x",         Cadence: "weekly-1,3,5", Attrs: map[string]any{"done": false, "icons": "💪"}},
 		},
 		Games: []seed.Game{
 			{UserEmail: "alice@example.com", Title: "Zelda",   Status: "playing", Attrs: map[string]any{"platform":"Switch"}},
