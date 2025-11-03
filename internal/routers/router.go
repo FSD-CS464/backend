@@ -46,9 +46,11 @@ func RegisterAPIV1(r *gin.Engine, cfg cfgLike, signer *auth.Signer, pool *pgxpoo
 		// protected.GET("/pets/:id", pdb.GetByID)
 		// protected.POST("/pets", pdb.Create)
 
-		// hdb := controllers.NewHabitControllerDB(pool)
-		// protected.GET("/habits/:id", hdb.GetByID)
-		// protected.POST("/habits", hdb.Create)
+		hdb := controllers.NewHabitController(pool)
+		protected.GET("/habits", hdb.List)
+		protected.GET("/habits/:id", hdb.GetByID)
+		protected.POST("/habits", hdb.Create)
+		protected.DELETE("/habits/:id", hdb.Delete)
 
 		// gdb := controllers.NewGameControllerDB(pool)
 		// protected.GET("/games/:id", gdb.GetByID)

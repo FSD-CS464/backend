@@ -26,8 +26,9 @@ CREATE TABLE IF NOT EXISTS habits (
   id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id       UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   title         STRING NOT NULL,
+  done          BOOLEAN NOT NULL DEFAULT false,
+  icons         STRING NOT NULL DEFAULT '💡',
   cadence       STRING NOT NULL,
-  attrs         JSONB NOT NULL DEFAULT '{}'::JSONB,
   created_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at    TIMESTAMPTZ NOT NULL DEFAULT now()
 );

@@ -55,13 +55,21 @@ ON CONFLICT (user_id, name) DO UPDATE
 	// Habits: upsert by (user_id, title)
 	for _, h := range d.Habits {
 		uid, err := getUID(h.UserEmail); if err != nil { return err }
-		attr, _ := json.Marshal(h.Attrs)
+		// Extract done and icons from attrs if present, use defaults otherwise
+		done := false
+		if d, ok := h.Attrs["done"].(bool); ok {
+			done = d
+		}
+		icons := "💡"
+		if i, ok := h.Attrs["icons"].(string); ok && i != "" {
+			icons = i
+		}
 		_, err = pool.Exec(ctx, `
-INSERT INTO habits (id, user_id, title, cadence, attrs)
-VALUES (gen_random_uuid(), $1, $2, $3, COALESCE($4, '{}'::JSONB))
+INSERT INTO habits (id, user_id, title, done, icons, cadence)
+VALUES (gen_random_uuid(), $1, $2, $3, $4, $5)
 ON CONFLICT (user_id, title) DO UPDATE
-  SET cadence = EXCLUDED.cadence, attrs = EXCLUDED.attrs, updated_at = now()`,
-			uid, h.Title, h.Cadence, attr)
+  SET done = EXCLUDED.done, icons = EXCLUDED.icons, cadence = EXCLUDED.cadence, updated_at = now()`,
+			uid, h.Title, done, icons, h.Cadence)
 		if err != nil { return err }
 	}
 
