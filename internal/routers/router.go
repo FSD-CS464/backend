@@ -50,6 +50,7 @@ func RegisterAPIV1(r *gin.Engine, cfg cfgLike, signer *auth.Signer, pool *pgxpoo
 		protected.GET("/habits", hdb.List)
 		protected.GET("/habits/:id", hdb.GetByID)
 		protected.POST("/habits", hdb.Create)
+		protected.PUT("/habits/:id", hdb.Update)
 		protected.DELETE("/habits/:id", hdb.Delete)
 
 		// gdb := controllers.NewGameControllerDB(pool)
