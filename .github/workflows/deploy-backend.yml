@@ -1,0 +1,39 @@
+name: Build and Push Backend Image
+
+on:
+  push:
+    branches: ["main"]
+
+env:
+  AWS_REGION: ap-southeast-1
+  ECR_REPOSITORY: school-app-backend
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: ecr-login
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build, tag, and push backend image
+        env:
+          REGISTRY: ${{ steps.ecr-login.outputs.registry }}
+          IMAGE_TAG: latest
+        run: |
+          # Build Docker image from backend repo root (Dockerfile is at ./)
+          docker build -t $REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+
+          # Push to ECR
+          docker push $REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
