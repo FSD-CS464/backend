@@ -1,0 +1,10 @@
+.git
+.gitignore
+.vscode
+.idea
+.DS_Store
+
+bin/
+build/
+dist/
+coverage.out
