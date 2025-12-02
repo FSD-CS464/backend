@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"encoding/json"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -91,5 +92,53 @@ RETURNING id, email, display_name, password_hash, attrs, created_at, updated_at`
 
 func (r *UserRepo) Delete(ctx context.Context, id string) error {
 	_, err := r.db.Exec(ctx, `DELETE FROM users WHERE id = $1`, id)
+	return err
+}
+
+// GetEnergy gets the user's energy from attrs, defaulting to 30 if not set
+func (r *UserRepo) GetEnergy(ctx context.Context, userID string) (int, error) {
+	user, err := r.GetByID(ctx, userID)
+	if err != nil {
+		return 0, err
+	}
+	
+	if energy, ok := user.Attrs["energy"].(float64); ok {
+		return int(energy), nil
+	} else if energy, ok := user.Attrs["energy"].(int); ok {
+		return energy, nil
+	}
+	// Default energy is 30
+	return 30, nil
+}
+
+// UpdateEnergy updates the user's energy in attrs
+func (r *UserRepo) UpdateEnergy(ctx context.Context, userID string, energy int) error {
+	// Ensure energy is within bounds
+	if energy < 0 {
+		energy = 0
+	} else if energy > 100 {
+		energy = 100
+	}
+	
+	// Get current user to preserve other attrs
+	user, err := r.GetByID(ctx, userID)
+	if err != nil {
+		return err
+	}
+	
+	// Update attrs
+	if user.Attrs == nil {
+		user.Attrs = make(map[string]any)
+	}
+	user.Attrs["energy"] = energy
+	
+	// Update in database
+	attrsJSON, err := json.Marshal(user.Attrs)
+	if err != nil {
+		return err
+	}
+	
+	const q = `UPDATE users SET attrs = $2, updated_at = now() WHERE id = $1`
+	_, err = r.db.Exec(ctx, q, userID, attrsJSON)
 	return err
 }

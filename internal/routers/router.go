@@ -41,6 +41,8 @@ func RegisterAPIV1(r *gin.Engine, cfg cfgLike, signer *auth.Signer, pool *pgxpoo
 		protected.POST("/users", udb.Create)
 		protected.PUT("/users/:id/name", udb.UpdateName)
 		protected.DELETE("/users/:id", udb.Delete)
+		protected.GET("/users/me/energy", udb.GetEnergy)
+		protected.PUT("/users/me/energy", udb.UpdateEnergy)
 
 		// pdb := controllers.NewPetControllerDB(pool)
 		// protected.GET("/pets/:id", pdb.GetByID)
@@ -63,6 +65,9 @@ func RegisterAPIV1(r *gin.Engine, cfg cfgLike, signer *auth.Signer, pool *pgxpoo
 		{
 			gameGroup.GET("/data", gameCtl.GetUserData)
 			gameGroup.POST("/save", gameCtl.SaveGameData)
+			gameGroup.POST("/check-energy", gameCtl.CheckEnergy)
+			gameGroup.POST("/deduct-energy", gameCtl.DeductEnergy)
+			gameGroup.GET("/mood", gameCtl.GetMood)
 		}
 	}
 }
