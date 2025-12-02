@@ -58,7 +58,7 @@ func RegisterAPIV1(r *gin.Engine, cfg cfgLike, signer *auth.Signer, pool *pgxpoo
 		// protected.POST("/games", gdb.Create)
 
 		// Game API endpoints for Godot game
-		gameCtl := controllers.NewGameController()
+		gameCtl := controllers.NewGameController(pool)
 		gameGroup := protected.Group("/game")
 		{
 			gameGroup.GET("/data", gameCtl.GetUserData)
