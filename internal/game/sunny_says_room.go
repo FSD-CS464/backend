@@ -1,7 +1,6 @@
 package game
 
 import (
-	"log"
 	"math/rand"
 	"sync"
 	"time"
@@ -211,18 +210,14 @@ func (r *SunnySaysRoom) AllPlayersReady() bool {
 	if r.State == RoomStatePlaying {
 		// Game has started - only need active players to be ready
 		hasActivePlayers := false
-		activeReadyCount := 0
 		for _, p := range r.Players {
 			if !p.IsGameOver() {
 				hasActivePlayers = true
-				if p.IsReady() {
-					activeReadyCount++
-				} else {
+				if !p.IsReady() {
 					return false
 				}
 			}
 		}
-		log.Printf("AllPlayersReady check: hasActivePlayers=%v, activeReadyCount=%d, totalPlayers=%d", hasActivePlayers, activeReadyCount, len(r.Players))
 		return hasActivePlayers // Return true if at least one active player is ready
 	} else {
 		// Game hasn't started yet - need all players to be ready

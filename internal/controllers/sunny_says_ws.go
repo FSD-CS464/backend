@@ -227,16 +227,11 @@ func (h *SunnySaysWSHandler) handlePlayerMessages(room *game.SunnySaysRoom, play
 		case MsgTypeReady:
 			// Player is ready after countdown
 			player.SetReady(true)
-			log.Printf("Player %s sent ready message. Room state: %v, Round active: %v, AllPlayersReady: %v, Players in room: %d",
-				player.ID, room.State, room.IsRoundActive(), room.AllPlayersReady(), len(room.Players))
 			// Check if all players are ready and no round is currently active
 			if room.AllPlayersReady() && !room.IsRoundActive() {
-				log.Printf("All players ready, starting next round for room %s", room.ID)
 				// Both players ready, start round in goroutine
 				room.ResetReady() // Reset for next round
 				go h.startRound(room)
-			} else {
-				log.Printf("Not starting round: AllPlayersReady=%v, IsRoundActive=%v", room.AllPlayersReady(), room.IsRoundActive())
 			}
 		}
 	}
@@ -276,7 +271,6 @@ func (h *SunnySaysWSHandler) handlePlayerMessages(room *game.SunnySaysRoom, play
 		// If a round is active and only one player remains, mark round as inactive
 		// This allows the remaining player to continue playing
 		if room.IsRoundActive() && len(room.Players) == 1 {
-			log.Printf("Opponent disconnected during active round, marking round inactive for remaining player")
 			room.SetRoundActive(false)
 			// Reset ready status so the remaining player can send ready to start next round
 			room.ResetReady()
@@ -377,12 +371,10 @@ func (h *SunnySaysWSHandler) startRound(room *game.SunnySaysRoom) {
 	// Check if confusion should be used
 	var sunnyFrame int
 	useConfusion := room.ShouldUseConfusion()
-	log.Printf("Round %d: ShouldUseConfusion=%v", room.CurrentRound, useConfusion)
 
 	if useConfusion {
 		// Run confusion sequence - flash 1-3 times, then show final symbol
 		flashCount := rand.Intn(3) + 1 // 1 to 3 flashes
-		log.Printf("Starting confusion sequence with %d flashes", flashCount)
 
 		// Flash symbols
 		for i := 0; i < flashCount; i++ {
@@ -392,7 +384,6 @@ func (h *SunnySaysWSHandler) startRound(room *game.SunnySaysRoom) {
 
 			// Send flash frame with 300ms duration to all players
 			duration300 := 300
-			log.Printf("Sending flash frame %d with duration %dms", flashFrame, duration300)
 			for _, p := range room.Players {
 				if !p.IsGameOver() {
 					h.sendMessage(p.Conn, ServerMessage{
@@ -417,7 +408,6 @@ func (h *SunnySaysWSHandler) startRound(room *game.SunnySaysRoom) {
 				// Reset to idle (frame 0) with combined duration
 				room.SetSunnyFrame(0)
 				idleDuration := int(totalIdleDuration)
-				log.Printf("Sending idle frame (0) with duration %dms", idleDuration)
 				for _, p := range room.Players {
 					if !p.IsGameOver() {
 						h.sendMessage(p.Conn, ServerMessage{
@@ -457,7 +447,6 @@ func (h *SunnySaysWSHandler) startRound(room *game.SunnySaysRoom) {
 
 		// Broadcast Sunny frame (no duration, this is the final symbol for the round)
 		normalDuration := 0 // 0 means no duration, final frame
-		log.Printf("Normal round: Sending frame %d with duration %dms", sunnyFrame, normalDuration)
 		for _, p := range room.Players {
 			if !p.IsGameOver() {
 				h.sendMessage(p.Conn, ServerMessage{
