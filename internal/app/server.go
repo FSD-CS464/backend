@@ -29,7 +29,7 @@ func NewServer(cfg Config) *gin.Engine {
 
 	routers.RegisterSystemRoutes(r)
 	routers.RegisterAPIV1(r, cfg, signer, pool)
-	routers.RegisterWS(r, cfg)
+	routers.RegisterWS(r, cfg, signer)
 
 	return r
 }

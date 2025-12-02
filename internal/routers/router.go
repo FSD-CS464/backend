@@ -67,6 +67,7 @@ func RegisterAPIV1(r *gin.Engine, cfg cfgLike, signer *auth.Signer, pool *pgxpoo
 	}
 }
 
-func RegisterWS(r *gin.Engine, cfg cfgLike) {
+func RegisterWS(r *gin.Engine, cfg cfgLike, signer *auth.Signer) {
 	r.GET("/ws", controllers.WSHandler)
+	r.GET("/ws/sunny-says", controllers.NewSunnySaysWSHandler(signer).HandleConnection)
 }
