@@ -12,11 +12,15 @@ import (
 )
 
 type HabitController struct {
-	repo *repository.HabitRepo
+	repo     *repository.HabitRepo
+	userRepo *repository.UserRepo
 }
 
 func NewHabitController(db *pgxpool.Pool) *HabitController {
-	return &HabitController{repo: repository.NewHabitRepo(db)}
+	return &HabitController{
+		repo:     repository.NewHabitRepo(db),
+		userRepo: repository.NewUserRepo(db),
+	}
 }
 
 // GET /habits - Get all habits for the authenticated user
@@ -126,11 +130,40 @@ func (ctl *HabitController) Update(c *gin.Context) {
 		return
 	}
 
+	// Check if done status is being changed
+	var energyChange int
+	if req.Done != nil {
+		wasDone := h.Done
+		isNowDone := *req.Done
+		if wasDone != isNowDone {
+			// Completing: +5, Uncompleting: -5
+			if isNowDone {
+				energyChange = +5
+			} else {
+				energyChange = -5
+			}
+		}
+	}
+
 	// Update the habit
 	updatedHabit, err := ctl.repo.Update(c, id, req.Title, req.Done, req.Icons, req.Cadence)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
+	}
+
+	// Update energy if habit done status changed
+	if energyChange != 0 {
+		currentEnergy, err := ctl.userRepo.GetEnergy(c, userID)
+		if err == nil {
+			newEnergy := currentEnergy + energyChange
+			if newEnergy < 0 {
+				newEnergy = 0
+			} else if newEnergy > 100 {
+				newEnergy = 100
+			}
+			ctl.userRepo.UpdateEnergy(c, userID, newEnergy)
+		}
 	}
 
 	c.JSON(http.StatusOK, gin.H{"data": updatedHabit})

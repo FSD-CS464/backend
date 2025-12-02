@@ -7,11 +7,54 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"fsd-backend/internal/middleware"
 	"fsd-backend/internal/repository"
 )
 
 type UserController struct{ repo *repository.UserRepo }
 func NewUserController(db *pgxpool.Pool) *UserController { return &UserController{repo: repository.NewUserRepo(db)} }
+
+// GET /users/me/energy - Get current user's energy
+func (ctl *UserController) GetEnergy(c *gin.Context) {
+	userID := middleware.UserID(c)
+	if userID == "" {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+	
+	energy, err := ctl.repo.GetEnergy(c, userID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch energy"})
+		return
+	}
+	
+	c.JSON(http.StatusOK, gin.H{"energy": energy})
+}
+
+// PUT /users/me/energy - Update current user's energy
+func (ctl *UserController) UpdateEnergy(c *gin.Context) {
+	userID := middleware.UserID(c)
+	if userID == "" {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+	
+	var req struct {
+		Energy int `json:"energy" binding:"required"`
+	}
+	
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	
+	if err := ctl.repo.UpdateEnergy(c, userID, req.Energy); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update energy"})
+		return
+	}
+	
+	c.JSON(http.StatusOK, gin.H{"energy": req.Energy})
+}
 
 func (ctl *UserController) List(c *gin.Context) {
 	limit := 50
